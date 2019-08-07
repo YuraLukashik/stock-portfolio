@@ -1,5 +1,6 @@
 import {render} from "react-dom"
 // @ts-ignore
-import React from "react"
+import * as React from "react"
+import { Charts } from "./Charts"
 
-// render(<Charts/>, document.getElementById('root-component'))
+render(<Charts/>, document.getElementById('root-component'))

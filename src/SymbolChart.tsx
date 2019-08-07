@@ -1,10 +1,18 @@
 import {firstPrice, loadSymbolHistory, scale} from "./stock-api";
-import React from "react"
+import * as React from "react"
 import {Axis, Chart, Geom, Tooltip} from "bizcharts";
 
-export class SymbolChart extends React.Component {
-    constructor() {
-        super()
+type Props = {
+    symbol: string
+}
+
+type State = {
+    data: any
+}
+
+export class SymbolChart extends React.Component<Props, State> {
+    constructor(props: any) {
+        super(props)
         this.state = {
             'data': []
         }

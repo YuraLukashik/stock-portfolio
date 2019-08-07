@@ -1,7 +1,6 @@
 import * as React from "react"
 import {SymbolChart} from "./SymbolChart";
 import Container from "@material-ui/core/Container";
-// @ts-ignore
 import MaterialTable from "material-table";
 import {forwardRef} from 'react';
 
