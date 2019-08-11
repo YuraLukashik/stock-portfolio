@@ -19,6 +19,8 @@ import Remove from '@material-ui/icons/Remove';
 import SaveAlt from '@material-ui/icons/SaveAlt';
 import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
+import {Portfolio} from "./portfolio"
+import uuid4 from "uuid/v4"
 
 type SvgRef = Ref<SVGSVGElement>
 
@@ -43,12 +45,15 @@ const tableIcons = {
 };
 
 type State = {
-    symbols: string[]
+    portfolio: Portfolio
 }
 
 export class Charts extends React.Component<{}, State> {
     state = {
-        'symbols': ['GOOGL', 'AAPL']
+        portfolio: [
+            {id: uuid4(), symbol: "GOOGL", percent: 70},
+            {id: uuid4(), symbol: "GOOGL", percent: 30}
+        ]
     }
 
     render() {
@@ -57,20 +62,28 @@ export class Charts extends React.Component<{}, State> {
                 editable={{
                     isEditable: rowData => true,
                     isDeletable: rowData => true,
+                    onRowAdd: data => {
+                        const portfolio = this.state.portfolio
+                        this.setState({
+                            portfolio: [...portfolio, {
+                                id: uuid4(),
+                                ...data
+                            }]
+                        })
+                        return new Promise((res, rej) => res())
+                    }
                 }}
                 icons={tableIcons}
                 columns={[
-                    {title: "Symbol", field: "symbol"},
-                    {title: "Percent", field: "percent"},
+                    {title: "Symbol", field: "symbol", type: "string"},
+                    {title: "Percent", field: "percent", type: "numeric"},
                 ]}
-                data={[
-                    {symbol: "GOOGL", percent: 70}
-                ]}
+                data={this.state.portfolio}
                 title="Portfolio"
             />
             {
-                this.state.symbols.map(symbol => {
-                    return <SymbolChart key={symbol} symbol={symbol}/>
+                this.state.portfolio.map(stock => {
+                    return <SymbolChart key={stock.id} symbol={stock.symbol}/>
                 })
             }
         </Container>
