@@ -1,9 +1,11 @@
 import {firstPrice, loadSymbolHistory, scale} from "./stock-api";
 import * as React from "react"
 import {Axis, Chart, Geom, Tooltip} from "bizcharts";
+import { History } from "./portfolio"
 
 type Props = {
-    symbol: string
+    symbol?: string
+    history?: History
 }
 
 type State = {
@@ -19,6 +21,9 @@ export class SymbolChart extends React.Component<Props, State> {
     }
 
     async componentDidMount() {
+        if (!this.props.symbol) {
+            return
+        }
         const data = await loadSymbolHistory(this.props.symbol)
         this.setState({
             data
@@ -26,7 +31,8 @@ export class SymbolChart extends React.Component<Props, State> {
     }
 
     render() {
-        return <Chart height={400} data={this.state.data} forceFit>
+        const data = this.props.history ? this.props.history : this.state.data
+        return <Chart height={400} data={data} forceFit>
             <Axis name="price"/>
             <Axis name="day"/>
             <Tooltip crosshairs={{type: 'y'}}/>

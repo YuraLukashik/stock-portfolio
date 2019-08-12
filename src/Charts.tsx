@@ -21,6 +21,8 @@ import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
 import {Portfolio} from "./portfolio"
 import uuid4 from "uuid/v4"
+import {firstPrice, loadSymbolHistory} from "./stock-api"
+import {History} from "./portfolio"
 
 type SvgRef = Ref<SVGSVGElement>
 
@@ -46,22 +48,77 @@ const tableIcons = {
 
 type State = {
     portfolio: Portfolio
+    portfolioHistory: History
 }
+
+const resolved = new Promise<void>((res, rej) => res())
 
 export class Charts extends React.Component<{}, State> {
     state = {
         portfolio: [
-            {id: uuid4(), symbol: "GOOGL", percent: 70},
-            {id: uuid4(), symbol: "GOOGL", percent: 30}
-        ]
+            {id: uuid4(), symbol: "GOOGL", percent: 10},
+            {id: uuid4(), symbol: "MSFT", percent: 80},
+            {id: uuid4(), symbol: "USD", percent: 10}
+        ],
+        portfolioHistory: []
+    }
+
+    portfolioGraph = async () => {
+        const {portfolio} = this.state
+        const histories = await Promise.all(
+            portfolio.map(async stock => {
+                const stockHistory = await loadSymbolHistory(stock.symbol)
+                const initialPrice = firstPrice(stockHistory)
+                return stockHistory.map(item => {
+                    item.price = item.price / initialPrice * (stock.percent / 100.)
+                    return item
+                })
+            })
+        )
+        if (histories.length < 1) {
+            return []
+        }
+        return histories[0].map((item, i) => {
+            const price = histories.reduce((sum, h, __, all) => {
+                return sum + h[i].price
+            }, 0)
+            return {
+                price,
+                day: item.day
+            }
+        })
+    }
+
+    async componentDidMount() {
+        const h = await this.portfolioGraph()
+        this.setState({
+            portfolioHistory: h
+        })
     }
 
     render() {
+        this.portfolioGraph()
         return <Container>
             <MaterialTable
                 editable={{
                     isEditable: rowData => true,
                     isDeletable: rowData => true,
+                    onRowDelete: row => {
+                        this.setState({
+                            portfolio: this.state.portfolio.filter(
+                                stock => stock.id !== row.id
+                            )
+                        })
+                        return resolved
+                    },
+                    onRowUpdate: (newData) => {
+                        this.setState({
+                            portfolio: this.state.portfolio.map(
+                                stock => stock.id === newData.id ? newData : stock
+                            )
+                        })
+                        return resolved
+                    },
                     onRowAdd: data => {
                         const portfolio = this.state.portfolio
                         this.setState({
@@ -70,7 +127,7 @@ export class Charts extends React.Component<{}, State> {
                                 ...data
                             }]
                         })
-                        return new Promise((res, rej) => res())
+                        return resolved
                     }
                 }}
                 icons={tableIcons}
@@ -86,6 +143,7 @@ export class Charts extends React.Component<{}, State> {
                     return <SymbolChart key={stock.id} symbol={stock.symbol}/>
                 })
             }
+            <SymbolChart history={this.state.portfolioHistory}/>
         </Container>
     }
 }

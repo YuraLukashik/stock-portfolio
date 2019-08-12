@@ -1,6 +1,7 @@
 import stockdata from "stock-data.js"
+import { History } from "./portfolio"
 
-export async function loadSymbolHistory(symbol) {
+export async function loadSymbolHistory(symbol): Promise<History> {
     const data = await stockdata.historical({
         symbol,
         API_TOKEN: 'qmso5iE3ybaRQKMvlWCrh5vNePWKYG4tetzlkXVAiyxu8wX0ITmXv56XQuB0',
@@ -16,13 +17,13 @@ export async function loadSymbolHistory(symbol) {
     }))
 }
 
-export function scale(history, factor) {
+export function scale(history: History, factor: number): History {
     return history.map(item => {
         item.price *= factor
         return item
     })
 }
 
-export function firstPrice(history) {
+export function firstPrice(history: History): number {
     return history[0].price
 }

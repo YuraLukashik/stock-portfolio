@@ -4,3 +4,8 @@ export type Stock = {
     percent: number
 }
 export type Portfolio = Stock[]
+
+export type History = {
+    day: string
+    price: number
+}[]
